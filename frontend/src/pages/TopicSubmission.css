@@ -1,0 +1,351 @@
+.topic-submission-container {
+    min-height: 100vh;
+    background-color: #f8fafc;
+    font-family: 'Inter', sans-serif;
+}
+
+.slim-header {
+    padding: 0.8rem 2rem !important;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.header-left .page-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #002b5b;
+}
+
+.submission-content {
+    max-width: 900px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem;
+}
+
+.submission-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    padding: 2.5rem;
+}
+
+.card-intro {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.card-intro h2 {
+    color: #1a237e;
+    font-size: 1.6rem;
+    margin-bottom: 0.4rem;
+    font-weight: 800;
+}
+
+.card-intro p {
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.upload-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.upload-slot {
+    background-color: white;
+}
+
+.slot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.upload-slot h3 {
+    margin: 0 0 0.8rem 0;
+    color: #002b5b;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+}
+
+.status-badge.uploaded {
+    background-color: #f0fdf4;
+    color: #166534;
+    border: 1px solid #dcfce7;
+}
+
+.drop-zone {
+    border: 2px dashed #00bfa5;
+    background-color: #f9fafb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.drop-zone.active {
+    border-color: #00bfa5;
+    background-color: #f1fbf9;
+}
+
+.drop-zone:hover {
+    background-color: #f0fdfa;
+    border-color: #00897b;
+}
+
+.file-icon {
+    color: #00bfa5;
+    flex-shrink: 0;
+}
+
+.file-info {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.file-name {
+    margin: 0;
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-hint {
+    margin: 0.1rem 0 0;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.action-btns {
+    display: flex;
+    gap: 0.8rem;
+    flex-shrink: 0;
+}
+
+.primary-btn {
+    background-color: #00bfa5;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background 0.3s;
+}
+
+.primary-btn:hover {
+    background-color: #00897b;
+}
+
+.primary-btn:disabled {
+    background-color: #b2dfdb;
+    cursor: not-allowed;
+}
+
+.secondary-btn {
+    background-color: white;
+    color: #00bfa5;
+    border: 1.5px solid #00bfa5;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.secondary-btn:hover {
+    background-color: #00bfa5;
+    color: white;
+}
+
+.alert-message {
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.alert-message.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.alert-message.error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+@media (max-width: 768px) {
+    .drop-zone {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+
+    .action-btns {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ef4444;
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.logout-btn:hover {
+    background: #fee2e2;
+}
+
+/* Project Title & Status Section */
+.project-title-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.project-title-section label {
+    display: block;
+    font-weight: 700;
+    color: #002b5b;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.title-input-wrapper {
+    display: flex;
+    gap: 1rem;
+}
+
+.title-input-wrapper input {
+    flex-grow: 1;
+    padding: 0.6rem 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.title-input-wrapper input:focus {
+    border-color: #00bfa5;
+    box-shadow: 0 0 0 3px rgba(0, 191, 165, 0.1);
+}
+
+.save-title-btn {
+    background-color: #1a237e;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.save-title-btn:hover {
+    background-color: #0d144d;
+}
+
+.status-overview {
+    background: #f8fafc;
+    padding: 1.2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid #e2e8f0;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.status-item .label,
+.remarks-item .label {
+    font-weight: 700;
+    color: #64748b;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-val {
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0.2rem 0.8rem;
+    border-radius: 6px;
+    text-transform: capitalize;
+}
+
+.status-val.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-val.approved {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-val.rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-val.revision {
+    background: #e0f2fe;
+    color: #075985;
+}
+
+.remarks-item {
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 1px dashed #cbd5e1;
+}
+
+.remarks-text {
+    margin: 0.4rem 0 0 0;
+    color: #1e293b;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
