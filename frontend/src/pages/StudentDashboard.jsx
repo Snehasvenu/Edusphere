@@ -28,7 +28,7 @@ const StudentDashboard = () => {
             title: 'Allocated Guide',
             icon: <UserCheck size={36} strokeWidth={2} />,
             color: '#6366f1',
-            path: '/student-profile'
+            path: '/allocated-guide'
         },
         {
             id: 2,

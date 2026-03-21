@@ -13,6 +13,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import GuideAllocation from './pages/GuideAllocation';
 import StudentsList from './pages/StudentsList';
 import GuidesList from './pages/GuidesList';
+import AllocatedGuide from './pages/AllocatedGuide';
+import Duplicates from './pages/Duplicates';
 
 function App() {
     return (
@@ -29,9 +31,11 @@ function App() {
                     <Route path="/guide-dashboard" element={<GuideDashboard />} />
                     <Route path="/coordinator-dashboard" element={<CoordinatorDashboard />} />
                     <Route path="/guide-allocation" element={<GuideAllocation />} />
+                    <Route path="/allocated-guide" element={<AllocatedGuide />} />
                     <Route path="/students-list" element={<StudentsList />} />
                     <Route path="/guides-list" element={<GuidesList />} />
                     <Route path="/approved-abstracts" element={<ApprovedAbstracts />} />
+                    <Route path="/duplicates" element={<Duplicates />} />
                     <Route path="/admin-dashboard" element={<AdminDashboard />} />
                     <Route path="/" element={<Navigate to="/login" />} />
                 </Routes>

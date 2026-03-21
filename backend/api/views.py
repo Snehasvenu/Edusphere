@@ -1,3 +1,5 @@
+import re
+from PyPDF2 import PdfReader
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -6,9 +8,74 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import get_user_model
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import ProjectSubmission, Evaluation, ProjectProgress, StudentProfile, FacultyProfile
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from .models import ProjectSubmission, Evaluation, ProjectProgress, StudentProfile, FacultyProfile, Notification
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 
 User = get_user_model()
+
+def extract_text_from_pdf(file_obj):
+    try:
+        file_obj.seek(0)
+        reader = PdfReader(file_obj)
+        text = ''
+        for page in reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + ' '
+        return text
+    except Exception:
+        return ''
+
+def normalize_text(text):
+    text = text.lower()
+    text = re.sub(r'[^a-z0-9\s]', ' ', text)
+    # Tokenize
+    try:
+        words = word_tokenize(text)
+    except LookupError:
+        nltk.download('punkt', quiet=True)
+        nltk.download('punkt_tab', quiet=True)
+        words = word_tokenize(text)
+        
+    # Remove stopwords
+    try:
+        stop_words = set(stopwords.words('english'))
+    except LookupError:
+        nltk.download('stopwords', quiet=True)
+        stop_words = set(stopwords.words('english'))
+        
+    # Specifically add requested words if not already in set (they usually are)
+    custom_stops = {'the', 'is', 'for', 'and', 'of', 'in'}
+    stop_words = stop_words.union(custom_stops)
+    
+    filtered_words = [word for word in words if word not in stop_words and len(word) > 1]
+    return ' '.join(filtered_words)
+
+def compute_duplicate_info(submission_text, approved_pairs, threshold=0.80):
+    corpus = [text for _, text in approved_pairs] + [submission_text]
+    vectorizer = TfidfVectorizer(stop_words='english')
+    try:
+        matrix = vectorizer.fit_transform(corpus)
+    except ValueError:
+        return 0, None
+
+    if matrix.shape[0] <= 1:
+        return 0, None
+
+    cosine_matrix = cosine_similarity(matrix[-1], matrix[:-1])
+    if cosine_matrix.size == 0:
+        return 0, None
+
+    best_score = float(cosine_matrix.max())
+    best_idx = int(cosine_matrix.argmax())
+
+    if best_score >= threshold:
+        return best_score, approved_pairs[best_idx][0]
+    return best_score, None
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -162,17 +229,118 @@ class TopicSubmissionView(APIView):
         
         if 'project_title' in request.data:
             submission.project_title = request.data.get('project_title')
-            
+
+        uploaded_abstract_text = ''
+        uploaded_abstract_source = None
         if 'abstract1' in request.FILES:
             submission.abstract1 = request.FILES['abstract1']
+            uploaded_abstract_source = 'abstract1'
         if 'abstract2' in request.FILES:
             submission.abstract2 = request.FILES['abstract2']
+            uploaded_abstract_source = 'abstract2'
         if 'abstract3' in request.FILES:
             submission.abstract3 = request.FILES['abstract3']
-            
+            uploaded_abstract_source = 'abstract3'
+
+        submission.save()
+
+        if uploaded_abstract_source:
+            file_field = getattr(submission, uploaded_abstract_source)
+            if file_field:
+                abstract_file = file_field.open('rb')
+                raw_text = extract_text_from_pdf(abstract_file)
+                abstract_file.close()
+                normalized_text = normalize_text(raw_text)
+
+                approved_subs = ProjectSubmission.objects.filter(status='APPROVED').exclude(approved_abstract__isnull=True)
+                approved_pairs = []
+                for approved in approved_subs:
+                    abstract_path = None
+                    if approved.approved_abstract == 1 and approved.abstract1:
+                        abstract_path = approved.abstract1.path
+                    elif approved.approved_abstract == 2 and approved.abstract2:
+                        abstract_path = approved.abstract2.path
+                    elif approved.approved_abstract == 3 and approved.abstract3:
+                        abstract_path = approved.abstract3.path
+
+                    if abstract_path:
+                        try:
+                            with open(abstract_path, 'rb') as f:
+                                approved_text = normalize_text(extract_text_from_pdf(f))
+                                if approved_text.strip():
+                                    approved_pairs.append((approved.project_title or 'Untitled', approved_text))
+                        except Exception:
+                            continue
+
+                score, matched_title = compute_duplicate_info(normalized_text, approved_pairs)
+                score_percent = int(score * 100)
+
+                submission.similarity_score = score_percent
+                submission.duplicate_project_title = matched_title if score >= 0.80 else None
+                submission.duplicate_warning = score >= 0.80
+
+                if score >= 0.80:
+                    duplicate_message = (
+                        f"Warning: A similar project abstract already exists in the system. "
+                        f"Similar Project Title: {matched_title or 'Unknown'}; Similarity: {score_percent}%"
+                    )
+                    submission.status = 'REVISION'
+                    
+                    warning_msg = (
+                        f"A similarity has been detected between the submitted project abstract and an existing project in the system.\n\n"
+                        f"Project title: {submission.project_title or 'Untitled'}\n"
+                        f"Similar existing project title: {matched_title or 'Unknown'}\n"
+                        f"Similarity percentage: {score_percent}%\n"
+                        f"Warning message: Please revise your abstract to ensure originality."
+                    )
+                    
+                    # Store remarks for the frontend
+                    submission.remarks = (submission.remarks or '') + '\n' + warning_msg
+
+                    # Notification to student
+                    Notification.objects.create(
+                        recipient=user,
+                        submission=submission,
+                        subject='Duplicate Project Abstract Detected',
+                        message=warning_msg
+                    )
+                    
+                    # Notification to guide
+                    if user.guide:
+                        Notification.objects.create(
+                            recipient=user.guide,
+                            submission=submission,
+                            subject='Duplicate Project Abstract Detected',
+                            message=warning_msg
+                        )
+                else:
+                    duplicate_message = 'No potential duplicate found; abstract accepted for review.'
+
+                    # Optionally notify coordinator/admin (first coordinator found)
+                    coordinator = User.objects.filter(role='COORDINATOR').first() or User.objects.filter(role='ADMIN').first()
+                    if coordinator:
+                        Notification.objects.create(
+                            recipient=coordinator,
+                            submission=submission,
+                            subject='Project Abstract Submitted',
+                            message=f"A new project abstract has been submitted by {submission.project_title or 'Untitled'}."
+                        )
+
+                submission.save()
+
+                return Response({
+                    'message': 'Submission updated successfully',
+                    'similarity_score': score_percent,
+                    'duplicate_warning': submission.duplicate_warning,
+                    'duplicate_project_title': submission.duplicate_project_title,
+                    'matched_project_title': matched_title,
+                    'duplicate_message': duplicate_message
+                }, status=status.HTTP_200_OK)
+
+        # No abstract just save metadata
         submission.save()
         return Response({'message': 'Submission updated successfully'}, status=status.HTTP_200_OK)
-        
+
     def get(self, request):
         email = request.query_params.get('email')
         if not email:
@@ -216,13 +384,21 @@ class EvaluationView(APIView):
             return Response({
                 'review1_marks': 'Not Evaluated',
                 'review2_marks': 'Not Evaluated',
-                'review3_marks': 'Not Evaluated'
+                'review3_marks': 'Not Evaluated',
+                'project_progress_marks': 'Not Evaluated',
+                'scrum_git_marks': 'Not Evaluated',
+                'presentation_marks': 'Not Evaluated',
+                'updated_at': None
             })
             
         return Response({
             'review1_marks': f"{eval.review1_marks}" if eval.review1_marks is not None else 'Not Evaluated',
             'review2_marks': f"{eval.review2_marks}" if eval.review2_marks is not None else 'Not Evaluated',
             'review3_marks': f"{eval.review3_marks}" if eval.review3_marks is not None else 'Not Evaluated',
+            'project_progress_marks': f"{eval.project_progress_marks}" if eval.project_progress_marks is not None else 'Not Evaluated',
+            'scrum_git_marks': f"{eval.scrum_git_marks}" if eval.scrum_git_marks is not None else 'Not Evaluated',
+            'presentation_marks': f"{eval.presentation_marks}" if eval.presentation_marks is not None else 'Not Evaluated',
+            'updated_at': eval.updated_at.isoformat() if eval.updated_at else None,
         })
 
 class AlottedStudentsView(APIView):
@@ -308,19 +484,46 @@ class UpdateEvaluationView(APIView):
     
     def post(self, request):
         student_email = request.data.get('email')
-        marks1 = request.data.get('review1_marks')
-        marks2 = request.data.get('review2_marks')
-        marks3 = request.data.get('review3_marks')
+        
+        def parse_mark(val):
+            try:
+                if val is None or str(val).strip() == '':
+                    return None
+                return float(val)
+            except ValueError:
+                return None
+                
+        marks1_prog = parse_mark(request.data.get('project_progress_marks'))
+        marks1_scrum = parse_mark(request.data.get('scrum_git_marks'))
+        marks1_pres = parse_mark(request.data.get('presentation_marks'))
+        
+        marks2 = parse_mark(request.data.get('review2_marks'))
+        marks3 = parse_mark(request.data.get('review3_marks'))
         
         user = User.objects.filter(email=student_email).first()
         if not user:
             return Response({'error': 'Student not found'}, status=status.HTTP_404_NOT_FOUND)
             
-        eval, created = Evaluation.objects.get_or_create(student=user)
-        if marks1 is not None: eval.review1_marks = marks1
-        if marks2 is not None: eval.review2_marks = marks2
-        if marks3 is not None: eval.review3_marks = marks3
-        eval.save()
+        eval_obj, created = Evaluation.objects.get_or_create(student=user)
+        
+        if marks1_prog is not None: eval_obj.project_progress_marks = marks1_prog
+        if marks1_scrum is not None: eval_obj.scrum_git_marks = marks1_scrum
+        if marks1_pres is not None: eval_obj.presentation_marks = marks1_pres
+        
+        # Calculate review1_marks total if any of the three are provided
+        if any(x is not None for x in [marks1_prog, marks1_scrum, marks1_pres]):
+            prog = float(eval_obj.project_progress_marks or 0)
+            scrum = float(eval_obj.scrum_git_marks or 0)
+            pres = float(eval_obj.presentation_marks or 0)
+            eval_obj.review1_marks = prog + scrum + pres
+        else:
+            # Fallback if only review1_marks is directly sent
+            marks1 = parse_mark(request.data.get('review1_marks'))
+            if marks1 is not None: eval_obj.review1_marks = marks1
+            
+        if marks2 is not None: eval_obj.review2_marks = marks2
+        if marks3 is not None: eval_obj.review3_marks = marks3
+        eval_obj.save()
         
         return Response({'message': 'Evaluation updated successfully'})
 
@@ -417,10 +620,11 @@ class AssignGuideView(APIView):
         except:
              return Response({'error': 'Student profile not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        if profile.guide:
-            return Response({
-                'error': f'Student is already assigned to {profile.guide.first_name}'
-            }, status=status.HTTP_400_BAD_REQUEST)
+        # Allow re-assignment (overwrite existing guide)
+        # if profile.guide:
+        #    return Response({
+        #        'error': f'Student is already assigned to {profile.guide.first_name}'
+        #    }, status=status.HTTP_400_BAD_REQUEST)
         
         # Assign guide to student
         profile.guide = guide
@@ -577,4 +781,62 @@ class ApprovedAbstractsView(APIView):
             })
         
         return Response(abstracts_data, status=status.HTTP_200_OK)
+
+class DuplicateCheckView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        threshold = float(request.query_params.get('threshold', 80)) / 100.0
+        duplicate_submissions = ProjectSubmission.objects.filter(similarity_score__gte=int(threshold * 100))
+
+        results = []
+        for submission in duplicate_submissions:
+            try:
+                student_name = f"{submission.student.first_name} {submission.student.last_name}".strip() or submission.student.username
+                try:
+                    guide = submission.student.student_profile.guide
+                    guide_name = f"{guide.first_name} {guide.last_name}".strip() if guide else 'Not Assigned'
+                except Exception:
+                    guide_name = 'Not Assigned'
+            except Exception:
+                student_name = 'Unknown'
+                guide_name = 'Unknown'
+
+            results.append({
+                'student_name': student_name,
+                'student_email': submission.student.email,
+                'project_title': submission.project_title,
+                'similarity_score': submission.similarity_score,
+                'duplicate_project_title': submission.duplicate_project_title,
+                'status': submission.status,
+                'guide_name': guide_name,
+                'remarks': submission.remarks
+            })
+
+        return Response(results, status=status.HTTP_200_OK)
+
+class NotificationsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        email = request.query_params.get('email')
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        notifications = Notification.objects.filter(recipient=user).order_by('-created_at')
+        data = [
+            {
+                'subject': n.subject,
+                'message': n.message,
+                'is_read': n.is_read,
+                'created_at': n.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            }
+            for n in notifications
+        ]
+
+        return Response(data, status=status.HTTP_200_OK)
 

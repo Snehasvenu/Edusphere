@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ArrowLeft, Users, UserCheck, Shuffle, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Users, UserCheck, Shuffle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './GuideAllocation.css';
 
@@ -20,8 +20,8 @@ const GuideAllocation = () => {
     const fetchData = async () => {
         try {
             const [studentsRes, guidesRes] = await Promise.all([
-                axios.get('http://localhost:8000/api/students/'),
-                axios.get('http://localhost:8000/api/guides/')
+                axios.get('http://localhost:8000/api/students/?t=' + Date.now()),
+                axios.get('http://localhost:8000/api/guides/?t=' + Date.now())
             ]);
             setStudents(studentsRes.data);
             setGuides(guidesRes.data);
@@ -30,8 +30,8 @@ const GuideAllocation = () => {
         }
     };
 
-    const handleManualAssign = async () => {
-        if (!selectedStudent || !selectedGuide) {
+    const handleAssign = async (studentId, guideId) => {
+        if (!studentId || !guideId) {
             showMessage('Please select both student and guide', 'error');
             return;
         }
@@ -39,13 +39,13 @@ const GuideAllocation = () => {
         setLoading(true);
         try {
             const response = await axios.post('http://localhost:8000/api/assign-guide/', {
-                student_id: selectedStudent,
-                guide_id: selectedGuide
+                student_id: studentId,
+                guide_id: guideId
             });
             showMessage(response.data.message, 'success');
             setSelectedStudent('');
             setSelectedGuide('');
-            fetchData(); // Refresh data
+            fetchData();
         } catch (error) {
             showMessage(error.response?.data?.error || 'Assignment failed', 'error');
         } finally {
@@ -62,7 +62,7 @@ const GuideAllocation = () => {
         try {
             const response = await axios.post('http://localhost:8000/api/auto-allocate-guides/', {});
             showMessage(response.data.message, 'success');
-            fetchData(); // Refresh data
+            fetchData();
         } catch (error) {
             showMessage(error.response?.data?.error || 'Auto-allocation failed', 'error');
         } finally {
@@ -76,15 +76,17 @@ const GuideAllocation = () => {
     };
 
     const unassignedStudents = students.filter(s => !s.guide);
-    const assignedStudents = students.filter(s => s.guide);
+
+    // Filter for the main assignment dropdown (Unassigned + currently selected if we were editing, but here we just show Unassigned)
+    // We can add a "Reassign" feature later, but for now we focus on the main flow. 
 
     return (
         <div className="guide-allocation">
             <header className="allocation-header">
                 <button className="back-btn" onClick={() => navigate('/coordinator-dashboard')}>
-                    <ArrowLeft size={20} /> Back to Dashboard
+                    <ArrowLeft size={18} /> Back to Dashboard
                 </button>
-                <h1>Guide Allocation</h1>
+                <h1>Guide Allocation Manager</h1>
             </header>
 
             {message.text && (
@@ -95,9 +97,9 @@ const GuideAllocation = () => {
             )}
 
             <div className="allocation-container">
-                {/* Manual Assignment Section */}
-                <section className="assignment-section">
-                    <h2><Users size={24} /> Manual Assignment</h2>
+                {/* Manual Assignment */}
+                <section>
+                    <h2><Users size={24} /> Assign Student to Guide</h2>
                     <div className="assignment-form">
                         <div className="form-group">
                             <label>Select Unassigned Student</label>
@@ -106,10 +108,10 @@ const GuideAllocation = () => {
                                 onChange={(e) => setSelectedStudent(e.target.value)}
                                 disabled={loading}
                             >
-                                <option value="">-- Select Student --</option>
+                                <option value="">-- Choose Student --</option>
                                 {unassignedStudents.map(student => (
                                     <option key={student.id} value={student.id}>
-                                        {student.name} {student.department && student.department !== 'N/A' ? `- Dept: ${student.department}` : ''}
+                                        {student.name} ({student.department || 'N/A'})
                                     </option>
                                 ))}
                             </select>
@@ -122,10 +124,10 @@ const GuideAllocation = () => {
                                 onChange={(e) => setSelectedGuide(e.target.value)}
                                 disabled={loading}
                             >
-                                <option value="">-- Select Guide --</option>
+                                <option value="">-- Choose Guide --</option>
                                 {guides.map(guide => (
                                     <option key={guide.id} value={guide.id}>
-                                        {guide.name} (Currently: {guide.student_count} students)
+                                        {guide.name} ({guide.student_count} assigned)
                                     </option>
                                 ))}
                             </select>
@@ -133,7 +135,7 @@ const GuideAllocation = () => {
 
                         <button
                             className="assign-btn"
-                            onClick={handleManualAssign}
+                            onClick={() => handleAssign(selectedStudent, selectedGuide)}
                             disabled={loading || !selectedStudent || !selectedGuide}
                         >
                             <UserCheck size={20} />
@@ -142,18 +144,17 @@ const GuideAllocation = () => {
                     </div>
                 </section>
 
-                {/* Auto-Allocation Section */}
+                {/* Auto Allocation */}
                 <section className="auto-allocation-section">
-                    <h2><Shuffle size={24} /> Auto-Allocation</h2>
-                    <p>Automatically assign all unassigned students to guides using round-robin distribution.</p>
+                    <h2><Shuffle size={24} /> One-Click Auto Allocation</h2>
                     <div className="stats">
                         <div className="stat-card">
                             <span className="stat-number">{unassignedStudents.length}</span>
-                            <span className="stat-label">Unassigned Students</span>
+                            <span className="stat-label">Pending Students</span>
                         </div>
                         <div className="stat-card">
                             <span className="stat-number">{guides.length}</span>
-                            <span className="stat-label">Available Guides</span>
+                            <span className="stat-label">Total Guides</span>
                         </div>
                     </div>
                     <button
@@ -161,70 +162,38 @@ const GuideAllocation = () => {
                         onClick={handleAutoAllocate}
                         disabled={loading || unassignedStudents.length === 0}
                     >
-                        <Shuffle size={20} />
-                        {loading ? 'Allocating...' : 'Auto-Allocate All'}
+                        <Shuffle size={18} />
+                        {loading ? 'Working...' : 'Auto-Allocate Pending Students'}
                     </button>
                 </section>
 
-                {/* Students Table */}
-                <section className="table-section">
-                    <h2><Users size={24} /> All Students ({students.length})</h2>
+                {/* Status Table */}
+                <section>
+                    <h2><RefreshCw size={24} /> Allocation Status</h2>
                     <div className="table-wrapper">
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
+                                    <th>Student Name</th>
                                     <th>Department</th>
-                                    <th>Assigned Guide</th>
-                                    <th>Status</th>
+                                    <th>Allocated Guide</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {students.map(student => (
                                     <tr key={student.id}>
                                         <td>{student.name}</td>
-                                        <td>{student.department && student.department !== 'N/A' ? student.department : '-'}</td>
-                                        <td>{student.guide ? student.guide.name : '-'}</td>
-                                        <td>
-                                            <span className={`status-badge ${student.guide ? 'assigned' : 'unassigned'}`}>
-                                                {student.guide ? 'Assigned' : 'Unassigned'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-
-                {/* Guides Table */}
-                <section className="table-section">
-                    <h2><UserCheck size={24} /> All Guides ({guides.length})</h2>
-                    <div className="table-wrapper">
-                        <table className="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Student Count</th>
-                                    <th>Assigned Students</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {guides.map(guide => (
-                                    <tr key={guide.id}>
-                                        <td>{guide.name}</td>
-                                        <td>
-                                            <span className="count-badge">{guide.student_count}</span>
+                                        <td>{student.department || '-'}</td>
+                                        <td style={{ fontWeight: student.guide ? '600' : '400', color: student.guide ? '#0f172a' : '#94a3b8' }}>
+                                            {student.guide ? student.guide.name : 'Not Allocated'}
                                         </td>
                                         <td>
-                                            {guide.students.length > 0 ? (
-                                                <ul className="student-list">
-                                                    {guide.students.map(s => (
-                                                        <li key={s.id}>{s.name}</li>
-                                                    ))}
-                                                </ul>
+                                            {/* Reassign UI could go here, for now simpler is better */}
+                                            {student.guide ? (
+                                                <span className="status-badge assigned">Assigned</span>
                                             ) : (
-                                                <span className="no-students">No students assigned</span>
+                                                <span className="status-badge unassigned">Pending</span>
                                             )}
                                         </td>
                                     </tr>

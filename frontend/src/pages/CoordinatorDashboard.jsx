@@ -27,7 +27,7 @@ const CoordinatorDashboard = () => {
         { id: 2, title: 'Guides', icon: <UserCheck size={48} />, color: '#0891b2', action: () => navigate('/guides-list') },
         { id: 3, title: 'Allocation', icon: <GitMerge size={48} />, color: '#059669', action: () => navigate('/guide-allocation') },
         { id: 4, title: 'Abstracts', icon: <FileText size={48} />, color: '#d97706', action: () => navigate('/approved-abstracts') },
-        { id: 5, title: 'Duplicates', icon: <Copy size={48} />, color: '#dc2626' }
+        { id: 5, title: 'Duplicates', icon: <Copy size={48} />, color: '#dc2626', action: () => navigate('/duplicates') }
     ];
 
     return (

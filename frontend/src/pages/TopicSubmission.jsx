@@ -73,14 +73,23 @@ const TopicSubmission = () => {
         formData.append(abstractKey, files[abstractKey]);
 
         try {
-            await axios.post('http://localhost:8000/api/submit-topics/', formData, {
+            const response = await axios.post('http://localhost:8000/api/submit-topics/', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setStatus(prev => ({ ...prev, message: `${abstractKey.replace('abstract', 'Abstract ')} uploaded successfully!` }));
+
+            const apiMessage = response.data.duplicate_message || `${abstractKey.replace('abstract', 'Abstract ')} uploaded successfully!`;
+            const uploadSuccess = response.data.duplicate_warning ? 'warning' : 'success';
+
+            setStatus(prev => ({ ...prev, message: apiMessage, error: '' }));
             setExistingFiles(prev => ({ ...prev, [abstractKey]: files[abstractKey].name }));
             setFiles(prev => ({ ...prev, [abstractKey]: null }));
+
+            if (uploadSuccess === 'warning') {
+                setStatus(prev => ({ ...prev, warning: apiMessage }));
+            }
         } catch (err) {
-            setStatus(prev => ({ ...prev, error: 'Failed to upload file. Please try again.' }));
+            const errMsg = err.response?.data?.error || 'Failed to upload file. Please try again.';
+            setStatus(prev => ({ ...prev, error: errMsg, message: '' }));
         } finally {
             setStatus(prev => ({ ...prev, uploading: false }));
         }

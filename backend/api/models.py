@@ -47,8 +47,10 @@ class ProjectSubmission(models.Model):
     abstract3 = models.FileField(upload_to='abstracts/', null=True, blank=True)
     status = models.CharField(max_length=20, choices=(('PENDING', 'Pending'), ('APPROVED', 'Approved'), ('REJECTED', 'Rejected'), ('REVISION', 'Revision Required')), default='PENDING')
     approved_abstract = models.IntegerField(null=True, blank=True) # 1, 2, or 3
+    duplicate_project_title = models.CharField(max_length=255, null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
     similarity_score = models.IntegerField(default=0)
+    duplicate_warning = models.BooleanField(default=False)
     submitted_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -56,6 +58,9 @@ class ProjectSubmission(models.Model):
 
 class Evaluation(models.Model):
     student = models.OneToOneField(User, on_delete=models.CASCADE, related_name='evaluation')
+    project_progress_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    scrum_git_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    presentation_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     review1_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     review2_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     review3_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
@@ -63,6 +68,17 @@ class Evaluation(models.Model):
 
     def __str__(self):
         return f"Evaluation for {self.student.username}"
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    submission = models.ForeignKey(ProjectSubmission, on_delete=models.CASCADE, related_name='notifications')
+    subject = models.CharField(max_length=255)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification to {self.recipient.email}: {self.subject}"
 
 class ProjectProgress(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='progress_logs')

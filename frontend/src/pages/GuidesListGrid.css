@@ -1,0 +1,216 @@
+.guides-list-grid-page {
+    min-height: 100vh;
+    background: #f0f4f8;
+    /* Softer background to differentiate */
+    padding: 40px;
+    /* Generous padding */
+    font-family: 'Inter', sans-serif;
+}
+
+.guides-list-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header-grid {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #d1d5db;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.header-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.back-btn-grid {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    color: #4b5563;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.back-btn-grid:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+.header-title-zone h1 {
+    font-size: 32px;
+    color: #111827;
+    margin: 0 0 8px 0;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-title-zone .subtitle {
+    color: #6b7280;
+    font-size: 16px;
+}
+
+/* Filters */
+.filters-grid-section {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 40px;
+    display: flex;
+    gap: 20px;
+}
+
+.search-box-grid {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.search-box-grid input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 16px;
+    width: 100%;
+    color: #1f2937;
+}
+
+/* THE GRID */
+.guides-cards-grid {
+    display: grid;
+    /* Using auto-fill with 350px min width */
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 40px;
+    /* Large 40px gap */
+    width: 100%;
+}
+
+.guide-card-item {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+}
+
+.guide-card-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+    border-color: #d1d5db;
+}
+
+/* Ensure no overlap */
+.guide-card-item * {
+    max-width: 100%;
+}
+
+.card-header-grid {
+    padding: 24px;
+    background: linear-gradient(to right, #ffffff, #f8fafc);
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.avatar-grid {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.guide-info-grid h3 {
+    margin: 0 0 4px 0;
+    font-size: 20px;
+    color: #111827;
+    font-weight: 700;
+}
+
+.role-tag {
+    font-size: 12px;
+    color: #2563eb;
+    background: #eff6ff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.card-body-grid {
+    padding: 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.grid-info-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #4b5563;
+    font-size: 15px;
+}
+
+.grid-info-row svg {
+    color: #9ca3af;
+}
+
+.card-footer-grid {
+    background: #f9fafb;
+    padding: 16px 24px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.student-list-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.student-list-grid li {
+    font-size: 14px;
+    color: #4b5563;
+    padding-bottom: 4px;
+}
+
+/* Mobile Tweaks */
+@media (max-width: 768px) {
+    .guides-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .guides-list-grid-page {
+        padding: 20px;
+    }
+}

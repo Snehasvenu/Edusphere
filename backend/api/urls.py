@@ -4,7 +4,7 @@ from .views import (
     EvaluationView, AlottedStudentsView, UpdateProjectStatusView, 
     UpdateEvaluationView, StudentsListView, GuidesListView, 
     AssignGuideView, AutoAllocateGuidesView, ProjectProgressView,
-    ApprovedAbstractsView
+    ApprovedAbstractsView, DuplicateCheckView, NotificationsView
 )
 
 urlpatterns = [
@@ -23,4 +23,6 @@ urlpatterns = [
     path('auto-allocate-guides/', AutoAllocateGuidesView.as_view(), name='auto-allocate-guides'),
     path('progress/', ProjectProgressView.as_view(), name='progress'),
     path('approved-abstracts/', ApprovedAbstractsView.as_view(), name='approved-abstracts'),
+    path('duplicate-check/', DuplicateCheckView.as_view(), name='duplicate-check'),
+    path('notifications/', NotificationsView.as_view(), name='notifications'),
 ]

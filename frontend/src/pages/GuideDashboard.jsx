@@ -246,25 +246,90 @@ const GuideDashboard = () => {
                                                 <span className="eval-badge">Reg No: {student.register_number}</span>
                                             </div>
                                         </div>
-                                        <div className="marks-grid">
-                                            <div className="mark-input">
-                                                <label>Review 1</label>
-                                                <input type="number" placeholder="Marks" id={`m1-${student.email}`} />
+                                        <div className="marks-grid detailed">
+                                            <div className="review-section">
+                                                <div className="review-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px'}}>
+                                                    <h4 style={{margin: 0, fontSize: '14px', color: '#1e293b'}}>Review 1 Breakdown</h4>
+                                                    <span className="total-badge" style={{fontSize: '13px', fontWeight: '600', color: '#3b82f6', backgroundColor: '#eff6ff', padding: '4px 10px', borderRadius: '12px'}}>Total: <span id={`m1_total-${student.email}`}>0</span> / 20</span>
+                                                </div>
+                                                <div className="mark-input-group" style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px'}}>
+                                                    <div className="mark-input">
+                                                        <label>Progress (10)</label>
+                                                        <input type="number" min="0" max="10" placeholder="0-10" id={`m1_prog-${student.email}`} 
+                                                            onChange={(e) => {
+                                                                const p = parseFloat(e.target.value || 0);
+                                                                const s = parseFloat(document.getElementById(`m1_scrum-${student.email}`)?.value || 0);
+                                                                const pr = parseFloat(document.getElementById(`m1_pres-${student.email}`)?.value || 0);
+                                                                document.getElementById(`m1_total-${student.email}`).innerText = (p+s+pr);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="mark-input">
+                                                        <label>Scrum/Git (5)</label>
+                                                        <input type="number" min="0" max="5" placeholder="0-5" id={`m1_scrum-${student.email}`} 
+                                                            onChange={(e) => {
+                                                                const p = parseFloat(document.getElementById(`m1_prog-${student.email}`)?.value || 0);
+                                                                const s = parseFloat(e.target.value || 0);
+                                                                const pr = parseFloat(document.getElementById(`m1_pres-${student.email}`)?.value || 0);
+                                                                document.getElementById(`m1_total-${student.email}`).innerText = (p+s+pr);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="mark-input">
+                                                        <label>Presentation (5)</label>
+                                                        <input type="number" min="0" max="5" placeholder="0-5" id={`m1_pres-${student.email}`} 
+                                                            onChange={(e) => {
+                                                                const p = parseFloat(document.getElementById(`m1_prog-${student.email}`)?.value || 0);
+                                                                const s = parseFloat(document.getElementById(`m1_scrum-${student.email}`)?.value || 0);
+                                                                const pr = parseFloat(e.target.value || 0);
+                                                                document.getElementById(`m1_total-${student.email}`).innerText = (p+s+pr);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="mark-input">
-                                                <label>Review 2</label>
-                                                <input type="number" placeholder="Marks" id={`m2-${student.email}`} />
-                                            </div>
-                                            <div className="mark-input">
-                                                <label>Review 3</label>
-                                                <input type="number" placeholder="Marks" id={`m3-${student.email}`} />
+                                            
+                                            <div className="review-section">
+                                                <h4 style={{margin: '0 0 12px 0', fontSize: '14px', color: '#1e293b'}}>Later Reviews</h4>
+                                                <div className="mark-input-group" style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px'}}>
+                                                    <div className="mark-input">
+                                                        <label>Review 2</label>
+                                                        <input type="number" placeholder="Marks" id={`m2-${student.email}`} />
+                                                    </div>
+                                                    <div className="mark-input">
+                                                        <label>Review 3</label>
+                                                        <input type="number" placeholder="Marks" id={`m3-${student.email}`} />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <button className="save-btn" onClick={() => handleMarksUpdate(student.email, {
-                                            review1_marks: document.getElementById(`m1-${student.email}`).value,
-                                            review2_marks: document.getElementById(`m2-${student.email}`).value,
-                                            review3_marks: document.getElementById(`m3-${student.email}`).value,
-                                        })}>Save Evaluation</button>
+                                        <button className="save-btn" style={{marginTop: '16px'}} onClick={() => {
+                                            const prog = document.getElementById(`m1_prog-${student.email}`).value;
+                                            const scrum = document.getElementById(`m1_scrum-${student.email}`).value;
+                                            const pres = document.getElementById(`m1_pres-${student.email}`).value;
+                                            
+                                            const pVal = parseFloat(prog);
+                                            const sVal = parseFloat(scrum);
+                                            const prVal = parseFloat(pres);
+
+                                            let error = "";
+                                            if (prog && (pVal < 0 || pVal > 10)) error += "Project Progress must be between 0 and 10.\n";
+                                            if (scrum && (sVal < 0 || sVal > 5)) error += "Scrum Book & Git Activity must be between 0 and 5.\n";
+                                            if (pres && (prVal < 0 || prVal > 5)) error += "Presentation & Communication must be between 0 and 5.\n";
+                                            
+                                            if (error) {
+                                                alert(error);
+                                                return;
+                                            }
+
+                                            handleMarksUpdate(student.email, {
+                                                project_progress_marks: prog,
+                                                scrum_git_marks: scrum,
+                                                presentation_marks: pres,
+                                                review2_marks: document.getElementById(`m2-${student.email}`).value,
+                                                review3_marks: document.getElementById(`m3-${student.email}`).value,
+                                            });
+                                        }}>Save Evaluation</button>
                                     </div>
                                 ))}
                             </div>

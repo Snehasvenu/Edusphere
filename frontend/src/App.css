@@ -1,5 +1,14 @@
+/* Global reset for box-sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 /* Cleaned up App.css */
 .App {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
+  /* Changed from height to min-height to allow scrolling */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
