@@ -525,6 +525,106 @@
     box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
 }
 
+/* Enhanced Evaluation UI */
+.evaluation-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.review-phase-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.review-phase-card:hover {
+    border-color: var(--accent);
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.phase-title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.total-score-badge {
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
+}
+
+.inputs-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.mark-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mark-field label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.mark-field input {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.75rem;
+    font-weight: 600;
+    color: var(--primary);
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.mark-field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+    outline: none;
+}
+
+.eval-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f1f5f9;
+}
+
 /* Animations */
 @keyframes slideUp {
     from {

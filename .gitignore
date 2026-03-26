@@ -1,0 +1,24 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+db.sqlite3
+media/
+*.txt
+git_status.txt
+
+# Node
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+build/
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

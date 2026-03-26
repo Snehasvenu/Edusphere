@@ -15,6 +15,7 @@ import StudentsList from './pages/StudentsList';
 import GuidesList from './pages/GuidesList';
 import AllocatedGuide from './pages/AllocatedGuide';
 import Duplicates from './pages/Duplicates';
+import CoordinatorEvaluation from './pages/CoordinatorEvaluation';
 
 function App() {
     return (
@@ -36,6 +37,7 @@ function App() {
                     <Route path="/guides-list" element={<GuidesList />} />
                     <Route path="/approved-abstracts" element={<ApprovedAbstracts />} />
                     <Route path="/duplicates" element={<Duplicates />} />
+                    <Route path="/coordinator-evaluation" element={<CoordinatorEvaluation />} />
                     <Route path="/admin-dashboard" element={<AdminDashboard />} />
                     <Route path="/" element={<Navigate to="/login" />} />
                 </Routes>

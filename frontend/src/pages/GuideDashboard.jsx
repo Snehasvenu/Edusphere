@@ -246,16 +246,22 @@ const GuideDashboard = () => {
                                                 <span className="eval-badge">Reg No: {student.register_number}</span>
                                             </div>
                                         </div>
-                                        <div className="marks-grid detailed">
-                                            <div className="review-section">
-                                                <div className="review-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px'}}>
-                                                    <h4 style={{margin: 0, fontSize: '14px', color: '#1e293b'}}>Review 1 Breakdown</h4>
-                                                    <span className="total-badge" style={{fontSize: '13px', fontWeight: '600', color: '#3b82f6', backgroundColor: '#eff6ff', padding: '4px 10px', borderRadius: '12px'}}>Total: <span id={`m1_total-${student.email}`}>0</span> / 20</span>
+                                        <div className="evaluation-group">
+                                            {/* Review 1 Phase */}
+                                            <div className="review-phase-card">
+                                                <div className="phase-header">
+                                                    <h4 className="phase-title">Review 1 Evaluation</h4>
+                                                    <div className="total-score-badge">
+                                                        <span>Total:</span>
+                                                        <span id={`m1_total-${student.email}`} style={{color: 'var(--accent)'}}>{student.evaluation?.review1_marks || 0}</span>
+                                                        <span style={{opacity: 0.5}}>/ 20</span>
+                                                    </div>
                                                 </div>
-                                                <div className="mark-input-group" style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px'}}>
-                                                    <div className="mark-input">
-                                                        <label>Progress (10)</label>
+                                                <div className="inputs-container">
+                                                    <div className="mark-field">
+                                                        <label>Project Progress (10)</label>
                                                         <input type="number" min="0" max="10" placeholder="0-10" id={`m1_prog-${student.email}`} 
+                                                            defaultValue={student.evaluation?.project_progress_marks || 0}
                                                             onChange={(e) => {
                                                                 const p = parseFloat(e.target.value || 0);
                                                                 const s = parseFloat(document.getElementById(`m1_scrum-${student.email}`)?.value || 0);
@@ -264,9 +270,10 @@ const GuideDashboard = () => {
                                                             }}
                                                         />
                                                     </div>
-                                                    <div className="mark-input">
-                                                        <label>Scrum/Git (5)</label>
+                                                    <div className="mark-field">
+                                                        <label>Scrum/Git Activity (5)</label>
                                                         <input type="number" min="0" max="5" placeholder="0-5" id={`m1_scrum-${student.email}`} 
+                                                            defaultValue={student.evaluation?.scrum_git_marks || 0}
                                                             onChange={(e) => {
                                                                 const p = parseFloat(document.getElementById(`m1_prog-${student.email}`)?.value || 0);
                                                                 const s = parseFloat(e.target.value || 0);
@@ -275,9 +282,10 @@ const GuideDashboard = () => {
                                                             }}
                                                         />
                                                     </div>
-                                                    <div className="mark-input">
-                                                        <label>Presentation (5)</label>
+                                                    <div className="mark-field">
+                                                        <label>Presentation Prep (5)</label>
                                                         <input type="number" min="0" max="5" placeholder="0-5" id={`m1_pres-${student.email}`} 
+                                                            defaultValue={student.evaluation?.presentation_marks || 0}
                                                             onChange={(e) => {
                                                                 const p = parseFloat(document.getElementById(`m1_prog-${student.email}`)?.value || 0);
                                                                 const s = parseFloat(document.getElementById(`m1_scrum-${student.email}`)?.value || 0);
@@ -289,47 +297,156 @@ const GuideDashboard = () => {
                                                 </div>
                                             </div>
                                             
-                                            <div className="review-section">
-                                                <h4 style={{margin: '0 0 12px 0', fontSize: '14px', color: '#1e293b'}}>Later Reviews</h4>
-                                                <div className="mark-input-group" style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px'}}>
-                                                    <div className="mark-input">
-                                                        <label>Review 2</label>
-                                                        <input type="number" placeholder="Marks" id={`m2-${student.email}`} />
+                                            {/* Review 2 Phase */}
+                                            <div className="review-phase-card">
+                                                <div className="phase-header">
+                                                    <h4 className="phase-title">Review 2 Evaluation</h4>
+                                                    <div className="total-score-badge">
+                                                        <span>Total:</span>
+                                                        <span id={`m2_total-${student.email}`} style={{color: 'var(--accent)'}}>{student.evaluation?.review2_marks || 0}</span>
+                                                        <span style={{opacity: 0.5}}>/ 20</span>
                                                     </div>
-                                                    <div className="mark-input">
-                                                        <label>Review 3</label>
-                                                        <input type="number" placeholder="Marks" id={`m3-${student.email}`} />
+                                                </div>
+                                                <div className="inputs-container">
+                                                    <div className="mark-field">
+                                                        <label>Project Progress (10)</label>
+                                                        <input type="number" min="0" max="10" placeholder="0-10" id={`m2_prog-${student.email}`} 
+                                                            defaultValue={student.evaluation?.r2_project_progress_marks || 0}
+                                                            onChange={(e) => {
+                                                                const p = parseFloat(e.target.value || 0);
+                                                                const s = parseFloat(document.getElementById(`m2_pres-${student.email}`)?.value || 0);
+                                                                const pr = parseFloat(document.getElementById(`m2_ui-${student.email}`)?.value || 0);
+                                                                document.getElementById(`m2_total-${student.email}`).innerText = (p+s+pr);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="mark-field">
+                                                        <label>Presentation (5)</label>
+                                                        <input type="number" min="0" max="5" placeholder="0-5" id={`m2_pres-${student.email}`} 
+                                                            defaultValue={student.evaluation?.r2_presentation_marks || 0}
+                                                            onChange={(e) => {
+                                                                const p = parseFloat(document.getElementById(`m2_prog-${student.email}`)?.value || 0);
+                                                                const s = parseFloat(e.target.value || 0);
+                                                                const pr = parseFloat(document.getElementById(`m2_ui-${student.email}`)?.value || 0);
+                                                                document.getElementById(`m2_total-${student.email}`).innerText = (p+s+pr);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="mark-field">
+                                                        <label>UI Creation (5)</label>
+                                                        <input type="number" min="0" max="5" placeholder="0-5" id={`m2_ui-${student.email}`} 
+                                                            defaultValue={student.evaluation?.r2_ui_creation_marks || 0}
+                                                            onChange={(e) => {
+                                                                const p = parseFloat(document.getElementById(`m2_prog-${student.email}`)?.value || 0);
+                                                                const s = parseFloat(document.getElementById(`m2_pres-${student.email}`)?.value || 0);
+                                                                const pr = parseFloat(e.target.value || 0);
+                                                                document.getElementById(`m2_total-${student.email}`).innerText = (p+s+pr);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Review 3 Phase */}
+                                            <div className="review-phase-card">
+                                                <div className="phase-header">
+                                                    <h4 className="phase-title">Review 3 Evaluation</h4>
+                                                    <div className="total-score-badge">
+                                                        <span>Total:</span>
+                                                        <span id={`m3_total-${student.email}`} style={{color: 'var(--accent)'}}>{student.evaluation?.review3_marks || 0}</span>
+                                                        <span style={{opacity: 0.5}}>/ 20</span>
+                                                    </div>
+                                                </div>
+                                                <div className="inputs-container">
+                                                    <div className="mark-field">
+                                                        <label>Project Progress (10)</label>
+                                                        <input type="number" min="0" max="10" placeholder="0-10" id={`m3_prog-${student.email}`} 
+                                                            defaultValue={student.evaluation?.r3_project_progress_marks || 0}
+                                                            onChange={(e) => {
+                                                                const p = parseFloat(e.target.value || 0);
+                                                                const s = parseFloat(document.getElementById(`m3_ui-${student.email}`)?.value || 0);
+                                                                const pr = parseFloat(document.getElementById(`m3_test-${student.email}`)?.value || 0);
+                                                                document.getElementById(`m3_total-${student.email}`).innerText = (p+s+pr);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="mark-field">
+                                                        <label>UI Creation (5)</label>
+                                                        <input type="number" min="0" max="5" placeholder="0-5" id={`m3_ui-${student.email}`} 
+                                                            defaultValue={student.evaluation?.r3_ui_creation_marks || 0}
+                                                            onChange={(e) => {
+                                                                const p = parseFloat(document.getElementById(`m3_prog-${student.email}`)?.value || 0);
+                                                                const s = parseFloat(e.target.value || 0);
+                                                                const pr = parseFloat(document.getElementById(`m3_test-${student.email}`)?.value || 0);
+                                                                document.getElementById(`m3_total-${student.email}`).innerText = (p+s+pr);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="mark-field">
+                                                        <label>Testing Methods (5)</label>
+                                                        <input type="number" min="0" max="5" placeholder="0-5" id={`m3_test-${student.email}`} 
+                                                            defaultValue={student.evaluation?.r3_testing_methods_marks || 0}
+                                                            onChange={(e) => {
+                                                                const p = parseFloat(document.getElementById(`m3_prog-${student.email}`)?.value || 0);
+                                                                const s = parseFloat(document.getElementById(`m3_ui-${student.email}`)?.value || 0);
+                                                                const pr = parseFloat(e.target.value || 0);
+                                                                document.getElementById(`m3_total-${student.email}`).innerText = (p+s+pr);
+                                                            }}
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <button className="save-btn" style={{marginTop: '16px'}} onClick={() => {
-                                            const prog = document.getElementById(`m1_prog-${student.email}`).value;
-                                            const scrum = document.getElementById(`m1_scrum-${student.email}`).value;
-                                            const pres = document.getElementById(`m1_pres-${student.email}`).value;
-                                            
-                                            const pVal = parseFloat(prog);
-                                            const sVal = parseFloat(scrum);
-                                            const prVal = parseFloat(pres);
 
-                                            let error = "";
-                                            if (prog && (pVal < 0 || pVal > 10)) error += "Project Progress must be between 0 and 10.\n";
-                                            if (scrum && (sVal < 0 || sVal > 5)) error += "Scrum Book & Git Activity must be between 0 and 5.\n";
-                                            if (pres && (prVal < 0 || prVal > 5)) error += "Presentation & Communication must be between 0 and 5.\n";
-                                            
-                                            if (error) {
-                                                alert(error);
-                                                return;
-                                            }
+                                        <div className="eval-footer">
+                                            <button className="save-btn" onClick={() => {
+                                                const prog = document.getElementById(`m1_prog-${student.email}`).value;
+                                                const scrum = document.getElementById(`m1_scrum-${student.email}`).value;
+                                                const pres = document.getElementById(`m1_pres-${student.email}`).value;
+                                                
+                                                const prog2 = document.getElementById(`m2_prog-${student.email}`).value;
+                                                const pres2 = document.getElementById(`m2_pres-${student.email}`).value;
+                                                const ui2 = document.getElementById(`m2_ui-${student.email}`).value;
 
-                                            handleMarksUpdate(student.email, {
-                                                project_progress_marks: prog,
-                                                scrum_git_marks: scrum,
-                                                presentation_marks: pres,
-                                                review2_marks: document.getElementById(`m2-${student.email}`).value,
-                                                review3_marks: document.getElementById(`m3-${student.email}`).value,
-                                            });
-                                        }}>Save Evaluation</button>
+                                                const prog3 = document.getElementById(`m3_prog-${student.email}`).value;
+                                                const ui3 = document.getElementById(`m3_ui-${student.email}`).value;
+                                                const test3 = document.getElementById(`m3_test-${student.email}`).value;
+                                                
+                                                const pVal = parseFloat(prog);
+                                                const sVal = parseFloat(scrum);
+                                                const prVal = parseFloat(pres);
+
+                                                let error = "";
+                                                if (prog && (pVal < 0 || pVal > 10)) error += "Project Progress must be between 0 and 10.\n";
+                                                if (scrum && (sVal < 0 || sVal > 5)) error += "Scrum Book & Git Activity must be between 0 and 5.\n";
+                                                if (pres && (prVal < 0 || prVal > 5)) error += "Presentation & Communication must be between 0 and 5.\n";
+                                                
+                                                if (prog2 && (parseFloat(prog2) < 0 || parseFloat(prog2) > 10)) error += "Review 2: Project Progress must be between 0 and 10.\n";
+                                                if (pres2 && (parseFloat(pres2) < 0 || parseFloat(pres2) > 5)) error += "Review 2: Presentation must be between 0 and 5.\n";
+                                                if (ui2 && (parseFloat(ui2) < 0 || parseFloat(ui2) > 5)) error += "Review 2: UI Creation must be between 0 and 5.\n";
+
+                                                if (prog3 && (parseFloat(prog3) < 0 || parseFloat(prog3) > 10)) error += "Review 3: Project Progress must be between 0 and 10.\n";
+                                                if (ui3 && (parseFloat(ui3) < 0 || parseFloat(ui3) > 5)) error += "Review 3: UI Creation must be between 0 and 5.\n";
+                                                if (test3 && (parseFloat(test3) < 0 || parseFloat(test3) > 5)) error += "Review 3: Testing Methods must be between 0 and 5.\n";
+
+                                                if (error) {
+                                                    alert(error);
+                                                    return;
+                                                }
+
+                                                handleMarksUpdate(student.email, {
+                                                    project_progress_marks: prog,
+                                                    scrum_git_marks: scrum,
+                                                    presentation_marks: pres,
+                                                    r2_project_progress_marks: prog2,
+                                                    r2_presentation_marks: pres2,
+                                                    r2_ui_creation_marks: ui2,
+                                                    r3_project_progress_marks: prog3,
+                                                    r3_ui_creation_marks: ui3,
+                                                    r3_testing_methods_marks: test3,
+                                                });
+                                            }}>Save Evaluation</button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

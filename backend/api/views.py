@@ -388,6 +388,12 @@ class EvaluationView(APIView):
                 'project_progress_marks': 'Not Evaluated',
                 'scrum_git_marks': 'Not Evaluated',
                 'presentation_marks': 'Not Evaluated',
+                'r2_project_progress_marks': 'Not Evaluated',
+                'r2_presentation_marks': 'Not Evaluated',
+                'r2_ui_creation_marks': 'Not Evaluated',
+                'r3_project_progress_marks': 'Not Evaluated',
+                'r3_ui_creation_marks': 'Not Evaluated',
+                'r3_testing_methods_marks': 'Not Evaluated',
                 'updated_at': None
             })
             
@@ -398,6 +404,12 @@ class EvaluationView(APIView):
             'project_progress_marks': f"{eval.project_progress_marks}" if eval.project_progress_marks is not None else 'Not Evaluated',
             'scrum_git_marks': f"{eval.scrum_git_marks}" if eval.scrum_git_marks is not None else 'Not Evaluated',
             'presentation_marks': f"{eval.presentation_marks}" if eval.presentation_marks is not None else 'Not Evaluated',
+            'r2_project_progress_marks': f"{eval.r2_project_progress_marks}" if eval.r2_project_progress_marks is not None else 'Not Evaluated',
+            'r2_presentation_marks': f"{eval.r2_presentation_marks}" if eval.r2_presentation_marks is not None else 'Not Evaluated',
+            'r2_ui_creation_marks': f"{eval.r2_ui_creation_marks}" if eval.r2_ui_creation_marks is not None else 'Not Evaluated',
+            'r3_project_progress_marks': f"{eval.r3_project_progress_marks}" if eval.r3_project_progress_marks is not None else 'Not Evaluated',
+            'r3_ui_creation_marks': f"{eval.r3_ui_creation_marks}" if eval.r3_ui_creation_marks is not None else 'Not Evaluated',
+            'r3_testing_methods_marks': f"{eval.r3_testing_methods_marks}" if eval.r3_testing_methods_marks is not None else 'Not Evaluated',
             'updated_at': eval.updated_at.isoformat() if eval.updated_at else None,
         })
 
@@ -429,6 +441,8 @@ class AlottedStudentsView(APIView):
                 dept = None
                 batch = None
                 reg_num = None
+            # Get evaluation info if exists
+            evaluation = Evaluation.objects.filter(student=student).first()
 
             student_list.append({
                 'name': f"{student.first_name} {student.last_name}".strip() or student.username,
@@ -446,7 +460,21 @@ class AlottedStudentsView(APIView):
                     'remarks': project.remarks if project else '',
                     'similarity_score': project.similarity_score if project else 0,
                     'approved_abstract': project.approved_abstract if project else None
-                } if project else None
+                } if project else None,
+                'evaluation': {
+                    'review1_marks': evaluation.review1_marks if evaluation else 0,
+                    'review2_marks': evaluation.review2_marks if evaluation else 0,
+                    'review3_marks': evaluation.review3_marks if evaluation else 0,
+                    'project_progress_marks': evaluation.project_progress_marks if evaluation else 0,
+                    'scrum_git_marks': evaluation.scrum_git_marks if evaluation else 0,
+                    'presentation_marks': evaluation.presentation_marks if evaluation else 0,
+                    'r2_project_progress_marks': evaluation.r2_project_progress_marks if evaluation else 0,
+                    'r2_presentation_marks': evaluation.r2_presentation_marks if evaluation else 0,
+                    'r2_ui_creation_marks': evaluation.r2_ui_creation_marks if evaluation else 0,
+                    'r3_project_progress_marks': evaluation.r3_project_progress_marks if evaluation else 0,
+                    'r3_ui_creation_marks': evaluation.r3_ui_creation_marks if evaluation else 0,
+                    'r3_testing_methods_marks': evaluation.r3_testing_methods_marks if evaluation else 0,
+                } if evaluation else None
             })
             
         return Response(student_list, status=status.HTTP_200_OK)
@@ -497,6 +525,14 @@ class UpdateEvaluationView(APIView):
         marks1_scrum = parse_mark(request.data.get('scrum_git_marks'))
         marks1_pres = parse_mark(request.data.get('presentation_marks'))
         
+        marks2_prog = parse_mark(request.data.get('r2_project_progress_marks'))
+        marks2_pres = parse_mark(request.data.get('r2_presentation_marks'))
+        marks2_ui = parse_mark(request.data.get('r2_ui_creation_marks'))
+        
+        marks3_prog = parse_mark(request.data.get('r3_project_progress_marks'))
+        marks3_ui = parse_mark(request.data.get('r3_ui_creation_marks'))
+        marks3_test = parse_mark(request.data.get('r3_testing_methods_marks'))
+        
         marks2 = parse_mark(request.data.get('review2_marks'))
         marks3 = parse_mark(request.data.get('review3_marks'))
         
@@ -510,6 +546,14 @@ class UpdateEvaluationView(APIView):
         if marks1_scrum is not None: eval_obj.scrum_git_marks = marks1_scrum
         if marks1_pres is not None: eval_obj.presentation_marks = marks1_pres
         
+        if marks2_prog is not None: eval_obj.r2_project_progress_marks = marks2_prog
+        if marks2_pres is not None: eval_obj.r2_presentation_marks = marks2_pres
+        if marks2_ui is not None: eval_obj.r2_ui_creation_marks = marks2_ui
+        
+        if marks3_prog is not None: eval_obj.r3_project_progress_marks = marks3_prog
+        if marks3_ui is not None: eval_obj.r3_ui_creation_marks = marks3_ui
+        if marks3_test is not None: eval_obj.r3_testing_methods_marks = marks3_test
+        
         # Calculate review1_marks total if any of the three are provided
         if any(x is not None for x in [marks1_prog, marks1_scrum, marks1_pres]):
             prog = float(eval_obj.project_progress_marks or 0)
@@ -521,8 +565,24 @@ class UpdateEvaluationView(APIView):
             marks1 = parse_mark(request.data.get('review1_marks'))
             if marks1 is not None: eval_obj.review1_marks = marks1
             
-        if marks2 is not None: eval_obj.review2_marks = marks2
-        if marks3 is not None: eval_obj.review3_marks = marks3
+        # Calculate review2_marks total if any of the three are provided
+        if any(x is not None for x in [marks2_prog, marks2_pres, marks2_ui]):
+            prog2 = float(eval_obj.r2_project_progress_marks or 0)
+            pres2 = float(eval_obj.r2_presentation_marks or 0)
+            ui2 = float(eval_obj.r2_ui_creation_marks or 0)
+            eval_obj.review2_marks = prog2 + pres2 + ui2
+        else:
+            if marks2 is not None: eval_obj.review2_marks = marks2
+
+        # Calculate review3_marks total if any of the three are provided
+        if any(x is not None for x in [marks3_prog, marks3_ui, marks3_test]):
+            prog3 = float(eval_obj.r3_project_progress_marks or 0)
+            ui3 = float(eval_obj.r3_ui_creation_marks or 0)
+            test3 = float(eval_obj.r3_testing_methods_marks or 0)
+            eval_obj.review3_marks = prog3 + ui3 + test3
+        else:
+            if marks3 is not None: eval_obj.review3_marks = marks3
+
         eval_obj.save()
         
         return Response({'message': 'Evaluation updated successfully'})
@@ -548,6 +608,9 @@ class StudentsListView(APIView):
                 reg_num = None
                 guide_obj = None
 
+            # Get evaluation info if exists
+            evaluation = Evaluation.objects.filter(student=student).first()
+
             student_list.append({
                 'id': student.id,
                 'name': f"{student.first_name} {student.last_name}".strip() or student.username,
@@ -558,7 +621,16 @@ class StudentsListView(APIView):
                 'guide': {
                     'id': guide_obj.id,
                     'name': f"{guide_obj.first_name} {guide_obj.last_name}".strip() or guide_obj.username
-                } if guide_obj else None
+                } if guide_obj else None,
+                'evaluation': {
+                    'review1_marks': float(evaluation.review1_marks or 0),
+                    'review2_marks': float(evaluation.review2_marks or 0),
+                    'review3_marks': float(evaluation.review3_marks or 0),
+                } if evaluation else {
+                    'review1_marks': 0,
+                    'review2_marks': 0,
+                    'review3_marks': 0,
+                }
             })
         
         return Response(student_list, status=status.HTTP_200_OK)

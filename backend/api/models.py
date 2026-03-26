@@ -62,7 +62,13 @@ class Evaluation(models.Model):
     scrum_git_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     presentation_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     review1_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    r2_project_progress_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    r2_presentation_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    r2_ui_creation_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     review2_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    r3_project_progress_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    r3_ui_creation_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    r3_testing_methods_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     review3_marks = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
